@@ -1,0 +1,43 @@
+/* Кнопки: общая высота, скругление 8px, у каждого варианта есть :hover. */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--btn-height);
+    padding: 0 1.25rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1;
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn--primary {
+    color: var(--color-btn-primary-text);
+    background-color: var(--color-btn-primary-bg);
+    border-color: var(--color-btn-primary-bg);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-btn-primary-bg-hover);
+    border-color: var(--color-btn-primary-bg-hover);
+}
+
+.btn--outline {
+    border-color: var(--color-btn-outline-border);
+}
+
+.btn--outline:hover {
+    border-color: var(--color-btn-outline-border-hover);
+}
+
+.btn--ghost:hover {
+    border-color: var(--color-btn-outline-border);
+}
