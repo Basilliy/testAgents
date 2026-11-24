@@ -11,6 +11,15 @@
     --color-welcome-art-layer-3: #f8b803;
     --color-welcome-art-layer-4: #f3bec7;
     --color-welcome-art-layer-5: #f3bec7;
+
+    --color-flea-sky: #fff8f5;
+    --color-flea-ground: #8a6f5c;
+    --color-flea-body: #8b4513;
+    --color-flea-legs: #4a230a;
+    --color-flea-shine: #ffffff;
+    --color-flea-comb: #1b1b18;
+    --color-flea-drop: #3d9bd6;
+    --color-flea-text: #1b1b18;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +34,15 @@
         --color-welcome-art-layer-3: #391800;
         --color-welcome-art-layer-4: #733000;
         --color-welcome-art-layer-5: #4b0600;
+
+        --color-flea-sky: #140a08;
+        --color-flea-ground: #a1876f;
+        --color-flea-body: #d9824a;
+        --color-flea-legs: #f2b787;
+        --color-flea-shine: #ffffff;
+        --color-flea-comb: #ededec;
+        --color-flea-drop: #5cb8f0;
+        --color-flea-text: #ededec;
     }
 }
 
@@ -181,6 +199,76 @@
     color: var(--color-text-muted);
 }
 
+/* Игра «Блоха» */
+
+.flea-game {
+    width: 100%;
+    max-width: 20.9375rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    background-color: var(--color-surface);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px var(--color-outline);
+}
+
+.flea-game__header,
+.flea-game__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.flea-game__header {
+    margin-bottom: 0.75rem;
+}
+
+.flea-game__footer {
+    justify-content: flex-start;
+    margin-top: 0.75rem;
+}
+
+.flea-game__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.flea-game__stats {
+    display: flex;
+    gap: 1rem;
+    margin: 0;
+    color: var(--color-text-muted);
+}
+
+.flea-game__value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.flea-game__canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 1;
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px var(--color-outline);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.flea-game__hint {
+    flex: 1;
+    min-width: 12rem;
+    margin: 0;
+    color: var(--color-text-muted);
+}
+
 .welcome-spacer {
     display: none;
     height: 3.625rem;
@@ -311,12 +399,13 @@
     }
 
     .welcome-header,
-    .welcome-main {
+    .welcome-main,
+    .flea-game {
         max-width: 56rem;
     }
 
-    .welcome-body {
-        flex-grow: 1;
+    .flea-game {
+        padding: 1.5rem;
     }
 
     .welcome-main {

@@ -11,6 +11,7 @@
             'resources/css/global/buttons.css',
             'resources/css/views/welcome.css',
             'resources/js/app.js',
+            'resources/js/views/welcome.js',
         ])
     </head>
     <body class="welcome">
@@ -162,6 +163,27 @@
                 </div>
             </main>
         </div>
+
+        <section class="flea-game" data-flea-game aria-labelledby="flea-game-title">
+            <div class="flea-game__header">
+                <h2 class="flea-game__title" id="flea-game-title">Блоха</h2>
+                <p class="flea-game__stats">
+                    <span>Счёт: <span class="flea-game__value" data-flea-score>0</span></span>
+                    <span>Рекорд: <span class="flea-game__value" data-flea-best>0</span></span>
+                </p>
+            </div>
+            <canvas
+                class="flea-game__canvas"
+                data-flea-canvas
+                tabindex="0"
+                role="img"
+                aria-label="Игровое поле: блоха перепрыгивает зубья расчёски и капли шампуня"
+            ></canvas>
+            <div class="flea-game__footer">
+                <button type="button" class="btn btn--primary" data-flea-start>Играть</button>
+                <p class="flea-game__hint">Пробел, ↑ или касание поля — прыжок. Держите дольше, чтобы прыгнуть выше.</p>
+            </div>
+        </section>
 
         @if (Route::has('login'))
             <div class="welcome-spacer"></div>
