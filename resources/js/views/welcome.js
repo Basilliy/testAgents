@@ -21,6 +21,15 @@ const ACCELERATION = 7; // прирост скорости в секунду
 
 const RESTART_DELAY = 450; // мс: защита от случайного рестарта сразу после столкновения
 const BEST_KEY = 'flea-game-best';
+const CHARACTER_KEY = 'flea-game-character';
+
+// Персонажи отличаются только внешним видом: физика и хитбокс у всех одинаковые.
+const CHARACTERS = {
+    flea: { ready: 'Блоха готова' },
+    ladybug: { ready: 'Божья коровка готова' },
+    ant: { ready: 'Муравей готов' },
+};
+const DEFAULT_CHARACTER = 'flea';
 
 const COLOR_VARS = {
     sky: '--color-flea-sky',
@@ -31,7 +40,30 @@ const COLOR_VARS = {
     comb: '--color-flea-comb',
     drop: '--color-flea-drop',
     text: '--color-flea-text',
+    ladybugBody: '--color-ladybug-body',
+    ladybugSpots: '--color-ladybug-spots',
+    ladybugHead: '--color-ladybug-head',
+    ladybugLegs: '--color-ladybug-legs',
+    antBody: '--color-ant-body',
+    antLegs: '--color-ant-legs',
 };
+
+// Лапки: точка крепления относительно центра тела, сдвиг фазы бега, размах шага.
+const FLEA_LEGS = [
+    { hip: 8, offset: 0, reach: 4 },
+    { hip: 1, offset: 2.1, reach: 3 },
+    { hip: -6, offset: 4.2, reach: 7, hind: true },
+];
+const SHORT_LEGS = [
+    { hip: 7, offset: 0, reach: 3 },
+    { hip: 0, offset: 2.1, reach: 3 },
+    { hip: -7, offset: 4.2, reach: 3 },
+];
+const ANT_LEGS = [
+    { hip: 3, offset: 0, reach: 6 },
+    { hip: 0, offset: 2.1, reach: 6 },
+    { hip: -3, offset: 4.2, reach: 6 },
+];
 
 const BUTTON_LABELS = {
     idle: 'Играть',
@@ -45,6 +77,8 @@ function initFleaGame(root) {
     const startButton = root.querySelector('[data-flea-start]');
     const scoreEl = root.querySelector('[data-flea-score]');
     const bestEl = root.querySelector('[data-flea-best]');
+    const characterPicker = root.querySelector('[data-flea-characters]');
+    const characterInputs = root.querySelectorAll('[data-flea-character]');
     const ctx = canvas?.getContext('2d');
 
     if (!canvas || !ctx || !startButton) {
@@ -59,6 +93,7 @@ function initFleaGame(root) {
     let distance = 0;
     let score = 0;
     let best = readBest();
+    let character = readCharacter();
     let shownScore = -1;
     let overAt = 0;
 
@@ -114,6 +149,39 @@ function initFleaGame(root) {
         }
     }
 
+    function readCharacter() {
+        try {
+            const saved = localStorage.getItem(CHARACTER_KEY);
+
+            return Object.hasOwn(CHARACTERS, saved ?? '') ? saved : DEFAULT_CHARACTER;
+        } catch {
+            return DEFAULT_CHARACTER;
+        }
+    }
+
+    function saveCharacter() {
+        try {
+            localStorage.setItem(CHARACTER_KEY, character);
+        } catch {
+            // без localStorage выбор действует до перезагрузки
+        }
+    }
+
+    function selectCharacter(next) {
+        if (!Object.hasOwn(CHARACTERS, next)) {
+            return;
+        }
+
+        character = next;
+        root.dataset.character = character;
+
+        for (const input of characterInputs) {
+            input.checked = input.value === character;
+        }
+
+        render();
+    }
+
     // ---------- Состояния ----------
 
     function reset() {
@@ -130,6 +198,11 @@ function initFleaGame(root) {
         state = next;
         startButton.textContent = BUTTON_LABELS[state];
         root.dataset.state = state;
+
+        // Персонажа меняем только вне забега.
+        if (characterPicker) {
+            characterPicker.disabled = state === 'running';
+        }
     }
 
     function start() {
@@ -233,6 +306,15 @@ function initFleaGame(root) {
         release();
         pause();
     });
+
+    for (const input of characterInputs) {
+        input.addEventListener('change', () => {
+            if (input.checked) {
+                selectCharacter(input.value);
+                saveCharacter();
+            }
+        });
+    }
 
     startButton.addEventListener('click', () => {
         if (state === 'paused') {
@@ -398,7 +480,7 @@ function initFleaGame(root) {
 
         drawGround();
         obstacles.forEach(drawObstacle);
-        drawFlea();
+        drawPlayer();
         drawOverlay();
     }
 
@@ -482,7 +564,7 @@ function initFleaGame(root) {
         ctx.globalAlpha = 1;
     }
 
-    function drawFlea() {
+    function drawPlayer() {
         const bottom = GROUND_Y - flea.y;
         const left = FLEA_X;
         const onGround = flea.y <= 0;
@@ -499,10 +581,22 @@ function initFleaGame(root) {
         ctx.scale(1 + squash, 1 - squash);
         ctx.translate(-(left + FLEA_W / 2), -bottom);
 
+        if (character === 'ladybug') {
+            drawLadybug(left, bottom, onGround);
+        } else if (character === 'ant') {
+            drawAnt(left, bottom, onGround);
+        } else {
+            drawFlea(left, bottom, onGround);
+        }
+
+        ctx.restore();
+    }
+
+    function drawFlea(left, bottom, onGround) {
         const cx = left + 14;
         const cy = bottom - 13;
 
-        drawLegs(cx, cy, bottom, onGround);
+        drawLegs(cx, cy, bottom, onGround, { color: colors.legs, width: 1.8, legs: FLEA_LEGS });
 
         // Тело
         ctx.fillStyle = colors.body;
@@ -558,19 +652,111 @@ function initFleaGame(root) {
         ctx.ellipse(cx - 2, cy - 5, 6, 2, -0.2, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
-
-        ctx.restore();
     }
 
-    function drawLegs(cx, cy, bottom, onGround) {
-        const legs = [
-            { hip: 8, offset: 0, reach: 4 },
-            { hip: 1, offset: 2.1, reach: 3 },
-            { hip: -6, offset: 4.2, reach: 7, hind: true },
-        ];
+    function drawLadybug(left, bottom, onGround) {
+        const cx = left + 15;
+        const base = bottom - 4;
 
-        ctx.strokeStyle = colors.legs;
-        ctx.lineWidth = 1.8;
+        drawLegs(cx, bottom - 9, bottom, onGround, { color: colors.ladybugLegs, width: 1.6, legs: SHORT_LEGS });
+
+        // Голова и усики
+        ctx.fillStyle = colors.ladybugHead;
+        ctx.beginPath();
+        ctx.arc(cx + 13, base - 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = colors.ladybugLegs;
+        ctx.lineWidth = 1;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx + 15, base - 8);
+        ctx.quadraticCurveTo(cx + 18, base - 13, cx + 21, base - 12);
+        ctx.stroke();
+
+        ctx.fillStyle = colors.shine;
+        ctx.beginPath();
+        ctx.arc(cx + 15.5, base - 5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Купол надкрылий
+        ctx.fillStyle = colors.ladybugBody;
+        ctx.beginPath();
+        ctx.ellipse(cx, base, 14, 13, 0, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // Точки
+        ctx.fillStyle = colors.ladybugSpots;
+
+        for (const [dx, dy, r] of [[-7, -7, 2.6], [1, -10, 2.4], [8, -5, 2.1], [-2, -3, 2], [-11, -2, 1.6]]) {
+            ctx.beginPath();
+            ctx.arc(cx + dx, base + dy, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Блик
+        ctx.fillStyle = colors.shine;
+        ctx.globalAlpha = 0.45;
+        ctx.beginPath();
+        ctx.ellipse(cx - 3, base - 10, 5, 1.8, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+
+    function drawAnt(left, bottom, onGround) {
+        drawLegs(left + 18, bottom - 15, bottom, onGround, { color: colors.antLegs, width: 1.4, legs: ANT_LEGS });
+
+        ctx.fillStyle = colors.antBody;
+
+        // Брюшко, грудь и голова
+        ctx.beginPath();
+        ctx.ellipse(left + 7, bottom - 12, 8, 6, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(left + 18, bottom - 12, 5.5, 3.2, -0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(left + 27, bottom - 14, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Перемычки между сегментами, жвалы и коленчатые усики
+        ctx.strokeStyle = colors.antBody;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(left + 13, bottom - 12);
+        ctx.lineTo(left + 23, bottom - 13);
+        ctx.stroke();
+
+        ctx.strokeStyle = colors.antLegs;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(left + 30, bottom - 12);
+        ctx.lineTo(left + 33, bottom - 10);
+        ctx.moveTo(left + 27, bottom - 18);
+        ctx.lineTo(left + 28, bottom - 24);
+        ctx.lineTo(left + 34, bottom - 22);
+        ctx.stroke();
+
+        // Глаз и блик на брюшке
+        ctx.fillStyle = colors.shine;
+        ctx.beginPath();
+        ctx.arc(left + 28.5, bottom - 15, 1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.ellipse(left + 5, bottom - 15, 4, 1.6, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+
+    function drawLegs(cx, cy, bottom, onGround, { color, width, legs }) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.beginPath();
@@ -605,7 +791,7 @@ function initFleaGame(root) {
 
     function drawOverlay() {
         const messages = {
-            idle: ['Блоха готова', 'Пробел, ↑ или касание — старт'],
+            idle: [CHARACTERS[character].ready, 'Пробел, ↑ или касание — старт'],
             paused: ['Пауза', 'Пробел или касание — продолжить'],
             over: [`Игра окончена: ${score}`, 'Пробел или касание — ещё раз'],
         };
@@ -634,6 +820,7 @@ function initFleaGame(root) {
     // ---------- Запуск ----------
 
     readColors();
+    selectCharacter(character);
     setState('idle');
     updateHud(true);
     new ResizeObserver(resize).observe(canvas);

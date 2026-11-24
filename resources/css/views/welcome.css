@@ -20,6 +20,13 @@
     --color-flea-comb: #1b1b18;
     --color-flea-drop: #3d9bd6;
     --color-flea-text: #1b1b18;
+
+    --color-ladybug-body: #d62828;
+    --color-ladybug-spots: #1b1b18;
+    --color-ladybug-head: #1b1b18;
+    --color-ladybug-legs: #1b1b18;
+    --color-ant-body: #3a2418;
+    --color-ant-legs: #2a1a10;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +50,13 @@
         --color-flea-comb: #ededec;
         --color-flea-drop: #5cb8f0;
         --color-flea-text: #ededec;
+
+        --color-ladybug-body: #ff4d4d;
+        --color-ladybug-spots: #1b1b18;
+        --color-ladybug-head: #3e3e3a;
+        --color-ladybug-legs: #d9d0c4;
+        --color-ant-body: #c47a4a;
+        --color-ant-legs: #e0a878;
     }
 }
 
@@ -260,6 +274,63 @@
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
+}
+
+.flea-game__characters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    border: 0;
+}
+
+.flea-game__legend {
+    float: left;
+    margin-right: 0.25rem;
+    padding: 0;
+    color: var(--color-text-muted);
+}
+
+.flea-game__character {
+    position: relative;
+    display: inline-flex;
+}
+
+/* Радиокнопка скрыта визуально, но остаётся доступной с клавиатуры и для скринридеров. */
+.flea-game__character input {
+    position: absolute;
+    width: 0.0625rem;
+    height: 0.0625rem;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.flea-game__character input:checked + .btn {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.flea-game__character input:checked + .btn:hover {
+    border-color: var(--color-accent);
+}
+
+.flea-game__character input:focus-visible + .btn {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 0.125rem;
+}
+
+.flea-game__characters:disabled .btn {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.flea-game__characters:disabled .btn:hover {
+    border-color: var(--color-btn-outline-border);
 }
 
 .flea-game__hint {

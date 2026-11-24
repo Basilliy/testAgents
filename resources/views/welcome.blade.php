@@ -177,8 +177,23 @@
                 data-flea-canvas
                 tabindex="0"
                 role="img"
-                aria-label="Игровое поле: блоха перепрыгивает зубья расчёски и капли шампуня"
+                aria-label="Игровое поле: выбранный персонаж перепрыгивает зубья расчёски и проскакивает под каплями шампуня"
             ></canvas>
+            <fieldset class="flea-game__characters" data-flea-characters>
+                <legend class="flea-game__legend">Персонаж</legend>
+                <label class="flea-game__character">
+                    <input type="radio" name="flea-character" value="flea" data-flea-character checked>
+                    <span class="btn btn--outline">Блоха</span>
+                </label>
+                <label class="flea-game__character">
+                    <input type="radio" name="flea-character" value="ladybug" data-flea-character>
+                    <span class="btn btn--outline">Божья коровка</span>
+                </label>
+                <label class="flea-game__character">
+                    <input type="radio" name="flea-character" value="ant" data-flea-character>
+                    <span class="btn btn--outline">Муравей</span>
+                </label>
+            </fieldset>
             <div class="flea-game__footer">
                 <button type="button" class="btn btn--primary" data-flea-start>Играть</button>
                 <p class="flea-game__hint">Пробел, ↑ или касание поля — прыжок. Держите дольше, чтобы прыгнуть выше.</p>
